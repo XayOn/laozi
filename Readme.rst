@@ -49,36 +49,36 @@ Examples
 
 .. code:: python
 
-        @dataclass
-        class Test:
-            a: str = None
-            b: str = None
+   @dataclass
+   class Test:
+       a: str = None
+       b: str = None
 
 
-        class Foo:
-            def __init__(self):
-                self.a = 1
-                self.b = 2
+   class Foo:
+       def __init__(self):
+           self.a = 1
+           self.b = 2
 
 
-        input_dict = {
-            "foo": [1, 2],
-            "bar": "3",
-            "baz": [{
-                "4": 5
-            }],
-            "stuff": {
-                6: 7
-            },
-            "qu": {8, 9},
-            "qux": Test(10, 11),
-            'quu': 1.2,
-            'qua': Decimal(1.2),
-            'stux': Foo(),
-            'foobar': b'123'
-        }
+   input_dict = {
+       "foo": [1, 2],
+       "bar": "3",
+       "baz": [{
+           "4": 5
+       }],
+       "stuff": {
+           6: 7
+       },
+       "qu": {8, 9},
+       "qux": Test(10, 11),
+       'quu': 1.2,
+       'qua': Decimal(1.2),
+       'stux': Foo(),
+       'foobar': b'123'
+   }
 
-    print(Laozi.parse(input_dict))
+   print(Laozi.parse(input_dict))
 
 Results in a string like this:
 
