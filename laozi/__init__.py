@@ -1,4 +1,3 @@
-import copy
 import numbers
 from dataclasses import asdict, is_dataclass
 
