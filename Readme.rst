@@ -61,8 +61,6 @@ Notes
 
 I like :star:, star this project to show your appreciation! 
 
-Contributors
-++++++++++++
 
 .. raw:: html
 
