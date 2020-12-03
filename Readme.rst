@@ -21,15 +21,6 @@ logging.
     :target: https://github.com/XayOn/laozi/actions
 
 
-Table of contents
-=================
-
-.. contents::
-  :local:
-  :depth: 3
-
-.. _features:
-
 Features
 --------
 
