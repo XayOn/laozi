@@ -15,7 +15,7 @@ logging.
 .. |downloads| image:: https://img.shields.io/pypi/dm/laozi
 .. |python_versions| image:: https://img.shields.io/pypi/pyversions/laozi
 .. |pypi_versions| image:: https://img.shields.io/pypi/v/laozi
-.. |coverage| image:: https://codecov.io/gh/XayOn/laozi/branch/develop/graph/badge.svg
+.. |coverage| image:: https://codecov.io/gh/XayOn/laozi/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/XayOn/laozi
 .. |actions| image:: https://github.com/XayOn/laozi/workflows/CI%20commit/badge.svg
     :target: https://github.com/XayOn/laozi/actions
