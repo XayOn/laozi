@@ -3,8 +3,13 @@ from dataclasses import asdict, is_dataclass
 
 
 class Laozi:
+    @staticmethod
+    def parse_final(obj):
+        return obj 
+
     @classmethod
     def parse_str(cls, obj, prefix=''):
+        obj = self.parse_final(obj)
         if not prefix:
             yield f'"{obj}"'
         else:
@@ -12,6 +17,7 @@ class Laozi:
 
     @classmethod
     def parse_int(cls, obj, prefix=''):
+        obj = self.parse_final(obj)
         yield f'{prefix[:-1]}={obj}'
 
     @classmethod
