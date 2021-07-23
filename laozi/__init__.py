@@ -1,4 +1,5 @@
 import numbers
+import copy
 from dataclasses import asdict, is_dataclass
 
 
@@ -70,5 +71,6 @@ class Laozi:
 
     @classmethod
     def parse(cls, input_obj):
+        input_obj = copy.deepcopy(input_obj)
         ctx = {'parsed_ids': []}
         return '; '.join(cls.get_parser_for(input_obj)(input_obj, ctx=ctx))
