@@ -1,4 +1,5 @@
 import numbers
+from contextlib import suppress
 import copy
 from dataclasses import asdict, is_dataclass
 
@@ -63,11 +64,13 @@ class Laozi:
         return getattr(cls, parser, default_parser)
 
     @classmethod
-    def unserializable(cls, obj, prefix='', ctx={}):
+    def unserializable(cls, key, obj, prefix='', ctx={}):
         yield f'{prefix[:-1]}="{obj.__repr__()}"'
 
     @classmethod
     def parse(cls, input_obj):
-        input_obj = copy.deepcopy(input_obj)
+        with suppress(Exception):
+            input_obj = copy.deepcopy(input_obj)
         ctx = {'parsed_ids': []}
-        return '; '.join(cls.get_parser_for(input_obj)(None, input_obj, ctx=ctx))
+        return '; '.join(
+            cls.get_parser_for(input_obj)(None, input_obj, ctx=ctx))
