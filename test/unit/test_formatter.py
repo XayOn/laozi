@@ -31,6 +31,8 @@ input_dict = {
     'stux': Foo(),
     'foobar': b'123'
 }
+input_dict_r = {"a": {"b": "c"}}
+input_dict_r['a']["c"] = input_dict_r
 
 input_list = list(input_dict.values())
 input_str = "foo"
@@ -43,6 +45,11 @@ def test_input_list():
         '0.0=1; 0.1=2; 1="3"; 2.0.4=5; 3.6=7; 4.0=8; 4.1=9; 5.a=10; 5.b=11; '
         '6=1.2; 7=1.1999999999999999555910790149937383830547332763671875; '
         '8.a=1; 8.b=2; 9="b\'123\'"')
+
+
+def test_input_dict_recursive():
+    from laozi import Laozi
+    assert Laozi.parse(input_dict_r) == 'a.b="c"; a.c=...'
 
 
 def test_input_dict():
