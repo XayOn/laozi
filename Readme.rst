@@ -90,6 +90,32 @@ This is a python library available on pypi, just run
 Make sure your python version is at least python3.8 and you're using that
 version's pip.
 
+
+Logging usage
+-------------
+
+You can use it as a formatter function for
+`loguru <https://github.com/Delgan/loguru>`_, with just a few lines:
+
+
+.. code:: python
+    
+    import sys
+    from laozi import Laozi
+    from loguru import logger
+    
+    
+    def formatter(record):
+        record['extra']['formatted'] = Laozi.parse(record['extra'])
+        return ('{time:%d/%m/%Y %H:%M:%m.%s} - {level.name} - '
+                '{module} - {extra[formatted]}\n{exception}')
+    
+    
+    logger.remove()
+    logger.add(sys.stdout, format=formatter, level="INFO")
+    logger.info("foo", extra=dict(a=1))
+
+
 Notes
 ------
 
