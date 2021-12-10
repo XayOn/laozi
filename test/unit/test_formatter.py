@@ -4,9 +4,9 @@ import copy
 
 
 @dataclass
-class Test:
-    a: str = None
-    b: str = None
+class CTest:
+    a: int = 0
+    b: int = 0
 
 
 class Foo:
@@ -25,7 +25,7 @@ input_dict = {
         6: 7
     },
     "qu": {8, 9},
-    "qux": Test(10, 11),
+    "qux": CTest(10, 11),
     'quu': 1.2,
     'qua': Decimal(1.2),
     'stux': Foo(),

@@ -5,7 +5,7 @@ Laozi
 
 Serialization library outputting a human-readable (and machine parseable)
 log format. Mainly intended to be use in conjunction with SPLUNK and python
-logging.
+logging to add splunk-based microservices trazability 
 
 
 |pypi| |release| |downloads| |python_versions| |coverage| |pypi_versions| |actions|
