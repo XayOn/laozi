@@ -63,3 +63,34 @@ def test_asynclog_in_handler(writer):
     asyncio.run(handler(FakeReq()))
 
     assert writer.read() == "starting_test_coro\nfinished_test_coro\n"
+
+
+def test_with_loguru(writer):
+    from laozi import Laozi
+    from loguru import logger
+    from laozi.asynclog import AiohttpLogger
+    import asyncio
+
+    def formatter(record):
+        record['extra']['formatted'] = Laozi.parse(record['extra'])
+        return ('{message}; {extra[formatted]}\n{exception}')
+
+    async def test_coro(a, b):
+        return a + b
+
+    async def handler(request):  # noqa
+        await AiohttpLogger(test_coro(1, 2)).info
+
+    class FakeReq:
+        trazability = {'app_name': 'foo'}
+        res = 1
+
+    logger.remove()
+    logger.add(writer, format=formatter, level="INFO")
+    asyncio.run(handler(FakeReq()))
+
+    exp = ('starting_test_coro; extra.app_name="foo"; '
+           'extra.params.a=1; extra.params.b=2\nfinished_test_coro; '
+           'extra.app_name="foo"; extra.result=3\n')
+
+    assert writer.read() == exp
