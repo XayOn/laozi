@@ -32,6 +32,9 @@ class AiohttpLogger:
         if attr in LEVELS:
             self.state = attr
             return self
+        if attr == 'request':
+            self.state = 'request'
+            return self
         raise AttributeError
 
     def __call__(self, *args, **kwargs):
@@ -42,10 +45,19 @@ class AiohttpLogger:
         """Make ourselves awaitable."""
         # Allow coroutine functions, delegating in calling ourselves via
         # __call__
+
+        # Allow for a special .request for middlewares
+        # use as await Logger(handler(request)).request
+        is_request = False
+        if self.state == 'request':
+            self.state = 'info'
+            is_request = True
+
         if asyncio.iscoroutinefunction(self.coro):
             self.coro = self.coro(*self.params[0], **self.params[1])
 
-        coro_locals = self.coro.cr_frame.f_locals
+        frame = self.coro.cr_frame
+        coro_locals = frame.f_locals
         # Allow logging both aiohttp handlers directly (i.e inside a custom
         # middleware) or coroutines called inside, both for class-based views
         # and normal views.
@@ -53,25 +65,37 @@ class AiohttpLogger:
             'request', getattr(coro_locals.get('self'), 'request', None))
         if not request:
             _locals = sys._getframe(1).f_locals
-            request = _locals.get('request',
-                                  getattr(_locals.get('self'), 'request', None))
+            request = _locals.get(
+                'request', getattr(_locals.get('self'), 'request', None))
 
         if not request:
             result = yield from self.coro.__await__()
             return result
 
-        state: int = logging._nameToLevel.get(self.state.upper(), 10)
-        name: str = self.coro.cr_frame.f_code.co_name
-        trz: dict = request.trazability
+        name: str = frame.f_code.co_name
 
-        self.logger.log(state,
-                        f'starting_{name}',
-                        extra=trz | {'params': self.coro.cr_frame.f_locals})
-        result = yield from self.coro.__await__()
-        self.logger.log(state,
-                        f'finished_{name}',
-                        extra=trz | dict(result=result))
-        return result
+        start = f'starting_{name}'
+        end = f'finished_{name}'
+
+        #: Assign to your request a trazability dict with a logging key
+        #: on your custom middleware to log trazability info on each log in
+        #: this request
+        trz: dict = request.get('trazability', {}).get('logging', {})
+
+        if is_request:
+            trz |= {'url': str(request.url), 'method': request.method}
+            coro_locals = coro_locals | {'request': '...'}
+            start = 'request_received'
+            end = 'response_sent'
+
+        self.logger.log(self.state.upper(),
+                        start,
+                        extra=trz | {'params': coro_locals})
+        res = yield from self.coro.__await__()
+        if is_request:
+            trz['code'] = res.status
+        self.logger.log(self.state.upper(), end, extra=trz | dict(result=res))
+        return res
 
 
 class LoggableMethodsClass:
