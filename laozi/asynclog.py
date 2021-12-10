@@ -18,10 +18,11 @@ class AiohttpLogger:
     >>> await Logger(coro(1, 2)).info
 
     """
-    def __init__(self, coro):
+    def __init__(self, coro, conds=None):
         """Set coroutine, state by default is debug"""
         self.coro: typing.Coroutine = coro
         self.state: str = 'debug'
+        self.request_conds = conds
         self.logger: loguru.Logger = loguru.logger
 
     def __getattr__(self, attr: str):
@@ -68,7 +69,11 @@ class AiohttpLogger:
             request = _locals.get(
                 'request', getattr(_locals.get('self'), 'request', None))
 
-        if not request:
+        dont_log = False
+        if self.request_conds:
+            dont_log = self.request_conds(request)
+
+        if not request or dont_log:
             result = yield from self.coro.__await__()
             return result
 
