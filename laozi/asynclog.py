@@ -34,8 +34,17 @@ class AiohttpLogger:
             return self
         raise AttributeError
 
+    def __call__(self, *args, **kwargs):
+        self.params = (args, kwargs)
+        return self
+
     def __await__(self):
         """Make ourselves awaitable."""
+        # Allow coroutine functions, delegating in calling ourselves via
+        # __call__
+        if asyncio.iscoroutinefunction(self.coro):
+            self.coro = self.coro(*self.params[0], **self.params[1])
+
         coro_locals = self.coro.cr_frame.f_locals
         # Allow logging both aiohttp handlers directly (i.e inside a custom
         # middleware) or coroutines called inside, both for class-based views

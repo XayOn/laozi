@@ -94,3 +94,36 @@ def test_with_loguru(writer):
            'extra.app_name="foo"; extra.result=3\n')
 
     assert writer.read() == exp
+
+
+def test_lmc_with_loguru(writer):
+    from laozi import Laozi
+    from loguru import logger
+    from laozi.asynclog import LoggableMethodsClass
+    import asyncio
+
+    class MyModel(LoggableMethodsClass):
+        async def test_coro(self, a, b):
+            return a + b
+
+    def formatter(record):
+        record['extra']['formatted'] = Laozi.parse(record['extra'])
+        return ('{message}; {extra[formatted]}\n{exception}')
+
+    async def handler(request):  # noqa
+        await MyModel().test_coro(1, 2).info
+        return request.res
+
+    class FakeReq:
+        trazability = {'app_name': 'foo'}
+        res = 1
+
+    logger.remove()
+    logger.add(writer, format=formatter, level="INFO")
+    asyncio.run(handler(FakeReq()))
+
+    exp = ('starting_test_coro; extra.app_name="foo"; '
+           'extra.params.a=1; extra.params.b=2\nfinished_test_coro; '
+           'extra.app_name="foo"; extra.result=3\n')
+
+    assert writer.read() == exp
