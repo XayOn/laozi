@@ -6,6 +6,7 @@ import sys
 import loguru
 
 LEVELS: set = {a.lower() for a in logging._levelToName.values()}
+DLG = ("self", "request")
 
 logging.basicConfig(level=logging.INFO)
 
@@ -89,17 +90,31 @@ class AiohttpLogger:
 
         if is_request:
             trz |= {'url': str(request.url), 'method': request.method}
-            coro_locals = coro_locals | {'request': '...'}
+            coro_locals = {
+                a: b
+                for a, b in coro_locals.items() if a not in DLG
+            }
             start = 'request_received'
             end = 'response_sent'
 
         self.logger.log(self.state.upper(),
                         start,
                         extra=trz | {'params': coro_locals})
-        res = yield from self.coro.__await__()
-        if is_request:
+        raise_exc = None
+        try:
+            res = yield from self.coro.__await__()
+        except Exception as err:
+            raise_exc = err
+            res = {
+                'exception': str(err),
+                'exception_class': err.__class__.__name__
+            }
+            end = 'http_error' if is_request else 'exception'
+        if is_request and not isinstance(res, dict):
             trz['code'] = res.status
         self.logger.log(self.state.upper(), end, extra=trz | dict(result=res))
+        if raise_exc:
+            raise raise_exc
         return res
 
 

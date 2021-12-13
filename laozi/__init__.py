@@ -45,10 +45,8 @@ class Laozi:
     @classmethod
     def parse_list(cls, key, obj, prefix='', ctx={}):
         for key, value in enumerate(obj):
-            yield from cls.get_parser_for(value)(key,
-                                                 value,
-                                                 prefix=f'{prefix}{key}.',
-                                                 ctx=ctx)
+            parser = cls.get_parser_for(value)
+            yield from parser(key, value, prefix=f'{prefix}{key}.', ctx=ctx)
 
     @classmethod
     def get_parser_for(cls, obj, ctx={}):
