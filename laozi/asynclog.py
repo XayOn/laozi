@@ -2,11 +2,12 @@ import logging
 import asyncio
 import typing
 import sys
+from aiohttp.web import Response
 
 import loguru
 
 LEVELS: set = {a.lower() for a in logging._levelToName.values()}
-DLG = ("self", "request", 'handler', 'old_handler')
+DLG = ("self", "request", 'handler', 'old_handler', 'cls')
 
 logging.basicConfig(level=logging.INFO)
 
@@ -51,9 +52,11 @@ class AiohttpLogger:
         # Allow for a special .request for middlewares
         # use as await Logger(handler(request)).request
         is_request = False
-        if self.state == 'request':
-            self.state = 'info'
+        state = self.state
+        if state == 'request':
+            state = 'INFO'
             is_request = True
+        state = state.upper()
 
         if asyncio.iscoroutinefunction(self.coro):
             self.coro = self.coro(*self.params[0], **self.params[1])
@@ -87,32 +90,29 @@ class AiohttpLogger:
         #: on your custom middleware to log trazability info on each log in
         #: this request
         trz: dict = request.get('trazability', {}).get('logging', {})
-
+        coro_locals = {a: b for a, b in coro_locals.items() if a not in DLG}
         if is_request:
             trz |= {'url': str(request.url), 'method': request.method}
-            coro_locals = {
-                a: b
-                for a, b in coro_locals.items() if a not in DLG
-            }
             start = 'request_received'
             end = 'response_sent'
-
-        self.logger.log(self.state.upper(),
-                        start,
-                        extra=trz | {'params': coro_locals})
+        self.logger.log(state, start, extra=trz | {'params': coro_locals})
         raise_exc = None
         try:
             res = yield from self.coro.__await__()
         except Exception as err:
+            state = 'ERROR'
             raise_exc = err
             res = {
                 'exception': str(err),
                 'exception_class': err.__class__.__name__
             }
             end = 'http_error' if is_request else 'exception'
-        if is_request and not isinstance(res, dict):
+
+        if isinstance(res, Response):
             trz['code'] = res.status
-        self.logger.log(self.state.upper(), end, extra=trz | dict(result=res))
+
+        self.logger.log(state, end, extra=trz | dict(result=res))
+
         if raise_exc:
             raise raise_exc
         return res
