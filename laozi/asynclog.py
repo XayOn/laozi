@@ -6,7 +6,7 @@ import sys
 import loguru
 
 LEVELS: set = {a.lower() for a in logging._levelToName.values()}
-DLG = ("self", "request")
+DLG = ("self", "request", 'handler', 'old_handler')
 
 logging.basicConfig(level=logging.INFO)
 

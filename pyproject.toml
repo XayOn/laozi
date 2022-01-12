@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "laozi"
-version = "1.1.5"
+version = "1.1.6"
 description = "Serialization library outputting a human-readable format"
 authors = ["David Francos Cuartero <me@davidfrancos.net>"]
 license = "GPL3"
