@@ -1,15 +1,19 @@
+class FakeReq(dict):
+    def __init__(self, *args, **kwargs):
+        trazability = dict(logging={'app_name': 'foo'})
+        self.update(dict(trazability=trazability))
+        super().__init__(*args, **kwargs)
+    res = 1
+
+
 def test_asynclog_in_middleware(writer):
     from laozi.asynclog import AiohttpLogger
-
-    class FakeReq:
-        trazability = {'app_name': 'foo'}
-        res = 1
 
     async def test(request):
         return request.res
 
     async def do_test():
-        log = AiohttpLogger(test(request=FakeReq()))
+        log = AiohttpLogger(test(request=FakeReq(a=1)))
         log.logger.add(writer, format="{message}")
         await log.info
 
@@ -22,13 +26,9 @@ def test_asynclog_in_middleware(writer):
 def test_asynclog_in_middleware_views(writer):
     from laozi.asynclog import AiohttpLogger
 
-    class FakeReq:
-        trazability = {'app_name': 'foo'}
-        res = 1
-
     class TestView:
         def __init__(self):
-            self.request = FakeReq()
+            self.request = FakeReq(a=1)
 
         async def get(self):
             return self.request.res
@@ -47,10 +47,6 @@ def test_asynclog_in_middleware_views(writer):
 def test_asynclog_in_handler(writer):
     from laozi.asynclog import AiohttpLogger
 
-    class FakeReq:
-        trazability = {'app_name': 'foo'}
-        res = 1
-
     async def test_coro(a, b):
         return a + b
 
@@ -60,7 +56,7 @@ def test_asynclog_in_handler(writer):
         await log.info
 
     import asyncio
-    asyncio.run(handler(FakeReq()))
+    asyncio.run(handler(FakeReq(a=1)))
 
     assert writer.read() == "starting_test_coro\nfinished_test_coro\n"
 
@@ -79,15 +75,15 @@ def test_with_loguru(writer):
         return a + b
 
     async def handler(request):  # noqa
+        print("INSIDE")
+        print(request)
         await AiohttpLogger(test_coro(1, 2)).info
 
-    class FakeReq:
-        trazability = {'app_name': 'foo'}
-        res = 1
+    print(FakeReq(a=2))
 
     logger.remove()
     logger.add(writer, format=formatter, level="INFO")
-    asyncio.run(handler(FakeReq()))
+    asyncio.run(handler(FakeReq(a=2)))
 
     exp = ('starting_test_coro; extra.app_name="foo"; '
            'extra.params.a=1; extra.params.b=2\nfinished_test_coro; '
@@ -114,13 +110,9 @@ def test_lmc_with_loguru(writer):
         await MyModel().test_coro(1, 2).info
         return request.res
 
-    class FakeReq:
-        trazability = {'app_name': 'foo'}
-        res = 1
-
     logger.remove()
     logger.add(writer, format=formatter, level="INFO")
-    asyncio.run(handler(FakeReq()))
+    asyncio.run(handler(FakeReq(a=2)))
 
     exp = ('starting_test_coro; extra.app_name="foo"; '
            'extra.params.a=1; extra.params.b=2\nfinished_test_coro; '
