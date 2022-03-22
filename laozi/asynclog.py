@@ -111,7 +111,15 @@ class AiohttpLogger:
         if isinstance(res, Response):
             trz['code'] = res.status
 
-        self.logger.log(state, end, extra=trz | dict(result=res))
+        extra = trz
+
+        if isinstance(res, tuple):
+            extra['key'] = res[0]
+            extra['response'] = res[1]
+        else:
+            extra['response'] = res
+
+        self.logger.log(state, end, extra=extra)
 
         if raise_exc:
             raise raise_exc

@@ -49,6 +49,10 @@ class Laozi:
             yield from parser(key, value, prefix=f'{prefix}{key}.', ctx=ctx)
 
     @classmethod
+    def parse_tuple(cls, key, obj, prefix='', ctx={}):
+        yield from cls.parse_list(key, obj, prefix, ctx=ctx)
+
+    @classmethod
     def get_parser_for(cls, obj, ctx={}):
         default_parser = cls.unserializable
         parser = f'parse_{type(obj).__name__}'
