@@ -1,19 +1,19 @@
 [tool.poetry]
 name = "laozi"
-version = "1.1.6"
+version = "1.1.7"
 description = "Serialization library outputting a human-readable format"
 authors = ["David Francos Cuartero <me@davidfrancos.net>"]
 license = "GPL3"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-loguru = "^0.5.3"
+python = "^3.10"
+loguru = "^*"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.1.2"
-pytest-cov = "^2.10.1"
-pytest-sugar = "^0.9.4"
-pytest-flake8 = "^1.0.6"
+pytest = "*"
+pytest-cov = "*"
+pytest-sugar = "*"
+pytest-flake8 = "*"
 
 
 [build-system]
